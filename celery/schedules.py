@@ -28,6 +28,7 @@ from .datastructures import AttributeDict
 __all__ = ['ParseException', 'schedule', 'crontab', 'crontab_parser',
            'maybe_schedule']
 
+# is_due: bool, next: float
 schedstate = namedtuple('schedstate', ('is_due', 'next'))
 
 
@@ -68,6 +69,14 @@ class schedule(object):
         return (self.nowfun or self.app.now)()
 
     def remaining_estimate(self, last_run_at):
+        """
+
+        :param last_run_at: the last time this schedule ran
+        :type  last_run_at: datetime.datetime
+        :return:    number of seconds remaining until the next time this
+                    schedule should run
+        :rtype:     datetime.timedelta
+        """
         return remaining(last_run_at, self.run_every,
                          self.maybe_make_aware(self.now()), self.relative)
 
@@ -97,6 +106,10 @@ class schedule(object):
             The default max loop interval may vary for different schedulers.
             For the default scheduler the value is 5 minutes, but for e.g.
             the django-celery database scheduler the value is 5 seconds.
+
+        :return:    a schedstate object, which is a named tuple containing a
+                    bool and a float
+        :rtype:     schedstate
 
         """
         last_run_at = self.maybe_make_aware(last_run_at)

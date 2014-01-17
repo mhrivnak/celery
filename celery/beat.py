@@ -82,6 +82,10 @@ class ScheduleEntry(object):
     def __init__(self, name=None, task=None, last_run_at=None,
                  total_run_count=None, schedule=None, args=(), kwargs={},
                  options={}, relative=False, app=None):
+        """
+        :type last_run_at:  datetime.datetime
+        :type schedule:     celery.schedules.schedule
+        """
         self.app = app
         self.name = name
         self.task = task
@@ -95,11 +99,24 @@ class ScheduleEntry(object):
         self.total_run_count = total_run_count or 0
 
     def _default_now(self):
+        """
+        :return:    A datetime instance for the current time.
+        :rtype:     datetime.datetime
+        """
         return self.schedule.now() if self.schedule else self.app.now()
 
     def _next_instance(self, last_run_at=None):
-        """Return a new instance of the same class, but with
-        its date and count fields updated."""
+        """
+        :param last_run_at: an optional datetime instance that should be
+                            assigned as the new value for "last_run_at" on the
+                            new instance of ScheduleEntry. If not provided, the
+                            current time will be used.
+        :type  last_run_at: datetime.datetime or NoneType
+
+        :return:    a new instance of the same class, but with
+                    its date and count fields updated.
+        :rtype:     celery.beat.ScheduleEntry
+        """
         return self.__class__(**dict(
             self,
             last_run_at=last_run_at or self._default_now(),
@@ -113,6 +130,8 @@ class ScheduleEntry(object):
         Does only update "editable" fields (task, schedule, args, kwargs,
         options).
 
+        :param other:   another instance of this class
+        :type  other:   celery.beat.ScheduleEntry
         """
         self.__dict__.update({'task': other.task, 'schedule': other.schedule,
                               'args': other.args, 'kwargs': other.kwargs,
@@ -183,6 +202,12 @@ class Scheduler(object):
         self.update_from_dict(entries)
 
     def maybe_due(self, entry, publisher=None):
+        """
+        :param entry:       A schedule entry that might be due
+        :type  entry:       ScheduleEntry
+
+        :return:
+        """
         is_due, next_time_to_run = entry.is_due()
 
         if is_due:
@@ -201,6 +226,8 @@ class Scheduler(object):
 
         Executes all due tasks.
 
+        :return:    number of seconds before the next tick should run
+        :rtype:     float
         """
         remaining_times = []
         try:
@@ -218,6 +245,10 @@ class Scheduler(object):
                 (monotonic() - self._last_sync) > self.sync_every)
 
     def reserve(self, entry):
+        """
+        :param entry:
+        :return:
+        """
         new_entry = self.schedule[entry.name] = next(entry)
         return new_entry
 

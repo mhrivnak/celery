@@ -133,7 +133,12 @@ timezone = _Zone()
 
 
 def maybe_timedelta(delta):
-    """Coerces integer to timedelta if `delta` is an integer."""
+    """
+    Coerces integer to timedelta if `delta` is an integer.
+
+    :return:    A timedelta instance
+    :rtype:     datetime.timedelta
+    """
     if isinstance(delta, (int, float)):
         return timedelta(seconds=delta)
     return delta
@@ -173,6 +178,8 @@ def remaining(start, ends_in, now=None, relative=False):
         resolution of `ends_in`).
     :keyword now: Function returning the current time and date,
         defaults to :func:`datetime.utcnow`.
+    :return: A timedelta for how long is remaining from start until ends_in
+    :rtype:  datetime.timedelta
 
     """
     now = now or datetime.utcnow()
